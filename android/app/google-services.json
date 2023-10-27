@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "805633383649",
+    "project_id": "fincas-app",
+    "storage_bucket": "fincas-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:805633383649:android:209c38daaff9d8e4dc6ba0",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCoizb5oJmM1KWbujH1M-N5210rVCvnfv8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
