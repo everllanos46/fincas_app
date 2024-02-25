@@ -40,10 +40,26 @@ dependencies:
   cloud_firestore: ^4.12.0
   image_picker: ^1.0.4
   firebase_storage: ^11.4.0
+  photo_view: ^0.14.0
+  sqflite: ^2.3.0
+  local_auth: ^2.1.2
+  pdf: ^3.6.0
+  open_file: ^3.2.1
+  path_provider: ^2.0.15
+  dio: ^4.0.0
+  url_launcher: ^6.0.13
+  flutter_local_notifications: ^16.1.0
+  quickalert: ^1.0.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons:
+
+flutter_icons:
+  android: 'launcher_icon'
+  image_path: 'assets/4388935.png'
+  adaptive_icon_background: 'assets/4388935.png'
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -79,12 +95,12 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: fonts/Roboto-Italic.ttf
+        - asset: fonts/Roboto-Black.ttf
+          style: italic
   #   - family: Trajan Pro
   #     fonts:
   #       - asset: fonts/TrajanPro.ttf

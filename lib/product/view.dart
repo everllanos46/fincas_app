@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_2/customwidgets/custom_dialog.dart';
 import "package:flutter_application_2/data/product.dart";
 import 'package:flutter_application_2/repository/firebase_service.dart';
+import 'package:flutter_application_2/utils/alert.dart';
 
 class ProductViewScreen extends StatefulWidget {
   final Map<String, dynamic>? product;
@@ -162,7 +163,7 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
                           ),
                           ElevatedButton(
                             onPressed: () async {
-                              await addProductToCart(
+                              var res = await addProductToCart(
                                   name: widget.product!['name'],
                                   description: widget.product!['description'],
                                   weight: widget.product!['weight'],
@@ -170,17 +171,15 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
                                   user: widget.user!['user'],
                                   imagen: widget.product!['image'],
                                   cantidad: quantity,
-                                  id: widget.product!['id']);
-                              Navigator.pop(context);
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return CustomDialog(
-                                      message:
-                                          "Producto añadido al carrito correctamente.");
-                                },
-                              );
-                              
+                                  id: widget.product!['id'],
+                                  cantidadMax: widget.product!['availability']);
+                              await alertResponse(
+                                  res,
+                                  "Producto agregado al carrito!",
+                                  "Agregado!",
+                                  context,
+                                  "Hubo un error al momento de agregar el producto al carrito",
+                                  "Error!");
                             },
                             style: ElevatedButton.styleFrom(
                               primary: Color(0xFF674AEF),

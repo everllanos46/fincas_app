@@ -3,6 +3,8 @@ import 'package:flutter_application_2/inventory/list.dart';
 import 'package:flutter_application_2/product/add.dart';
 import 'package:flutter_application_2/main_products_screen.dart';
 import 'package:flutter_application_2/login_screen.dart';
+import 'package:flutter_application_2/views/buys_list.dart';
+import 'package:flutter_application_2/views/settings_view.dart';
 
 
 class CustomDrawer extends StatelessWidget {
@@ -77,6 +79,30 @@ class CustomDrawer extends StatelessWidget {
             },
           ),
           ListTile(
+            title: Text("Lista de compras"),
+            leading: Icon(Icons.card_travel),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        BuysListScreen(user: this.user)),
+              );
+            },
+          ),
+          ListTile(
+            title: Text("Ajustes"),
+            leading: Icon(Icons.settings),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        AjustesScreen(user: this.user)),
+              );
+            },
+          ),
+          ListTile(
             title: Text("Cerrar Sesión"),
             leading: Icon(Icons.close),
             onTap: () {
@@ -129,6 +155,30 @@ class CustomDrawer extends StatelessWidget {
                     builder: (context) => MainProductsScreen(
                           user: this.user,
                         )),
+              );
+            },
+          ),
+          ListTile(
+            title: Text("Lista de compras"),
+            leading: Icon(Icons.card_travel),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        BuysListScreen(user: this.user)),
+              );
+            },
+          ),
+          ListTile(
+            title: Text("Ajustes"),
+            leading: Icon(Icons.settings),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        AjustesScreen(user: this.user)),
               );
             },
           ),

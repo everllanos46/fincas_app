@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_2/repository/firebase_service.dart';
+import 'package:image_picker/image_picker.dart';
 
 class RegisterScreen extends StatefulWidget {
   RegisterScreen();
@@ -15,25 +18,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
   TextEditingController emailController = TextEditingController();
   TextEditingController telefonoController = TextEditingController();
   bool isAdmin = false;
+  File? _image;
 
   void addUser() async {
     if (_formKey.currentState!.validate()) {
-      // Los campos son válidos, puedes procesar los datos y agregar el usuario.
-
-      // Determinar el valor de 'role' en función del estado del interruptor.
       String role = isAdmin ? "admin" : "user";
-
-      // Llamar a la función para agregar el usuario con los datos correspondientes.
       await addUserToUserCollection(
         emailController.text,
         contrasenaController.text,
         role,
         telefonoController.text,
         usuarioController.text,
+        File(_image!.path)
       );
 
-      Navigator.pop(context); // Cierra la vista de registro
+      Navigator.pop(context); 
     }
+  }
+
+  Future getImageFromGallery() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    setState(() {
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+      }
+    });
+  }
+
+  Future getImageFromCamera() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.camera);
+
+    setState(() {
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+      }
+    });
   }
 
   @override
@@ -60,6 +82,48 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 75,
+                      backgroundImage: _image != null
+                          ? FileImage(_image!)
+                          : NetworkImage(
+                                      'https://png.pngitem.com/pimgs/s/157-1571855_upload-button-transparent-upload-to-cloud-hd-png.png') as ImageProvider<Object>?,
+                      backgroundColor: Colors.transparent,
+                    ),
+                    ElevatedButton(
+                      onPressed: getImageFromGallery,
+                      child: Text('Galería'),
+                      style: ElevatedButton.styleFrom(
+                        primary: Color(0xFF674AEF),
+                        padding: EdgeInsets.symmetric(
+                          vertical: 15,
+                          horizontal: 20,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: getImageFromCamera,
+                      child: Text('Cámara'),
+                      style: ElevatedButton.styleFrom(
+                        primary: Color(0xFF674AEF),
+                        padding: EdgeInsets.symmetric(
+                          vertical: 15,
+                          horizontal: 20,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 TextFormField(
                   controller: usuarioController,
                   decoration: InputDecoration(

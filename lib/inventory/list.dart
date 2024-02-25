@@ -34,8 +34,8 @@ class _InventoryViewScreenState extends State<InventoryViewScreen> {
                   builder: ((context, snapshot) {
                     return RefreshIndicator(
                       onRefresh: () async {
-                        // Aquí puedes realizar una nueva petición o cargar los datos nuevamente.
-                        await getProductsByUser(); // Reemplaza fetchData con tu lógica para obtener productos.
+                        await getProductsByUser();
+                        setState(() {});
                       },
                       child: ListView.builder(
                         itemCount: products1.length, // Utiliza productList.
@@ -69,10 +69,11 @@ class _InventoryViewScreenState extends State<InventoryViewScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => ProductRegistrationScreen(
-                    user: widget.user,
-                    product: product,
-                  )),
+            builder: (context) => ProductRegistrationScreen(
+              user: widget.user,
+              product: product,
+            ),
+          ),
         );
       },
       child: Card(
@@ -82,11 +83,44 @@ class _InventoryViewScreenState extends State<InventoryViewScreen> {
         borderOnForeground: true,
         child: Column(
           children: <Widget>[
-            Image.network(product!['image'],
-                height: 150), // Ajusta el tamaño de la imagen
+            Image.network(product!['image'], height: 150),
             ListTile(
               title: Text("Nombre: " + product['name']),
               subtitle: Text(product!['description']),
+              trailing: IconButton(
+                icon: Icon(Icons.delete),
+                onPressed: () {
+                  // Muestra el diálogo de confirmación
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text("Eliminar producto"),
+                        content:
+                            Text("¿Seguro que desea eliminar el producto?"),
+                        actions: <Widget>[
+                          TextButton(
+                            child: Text("Cancelar"),
+                            onPressed: () {
+                              // Cierra el diálogo si se presiona cancelar
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          TextButton(
+                            child: Text("Aceptar"),
+                            onPressed: () async {
+                              await deleteProduct(id: product!['id']);
+                              await getProductsByUser();
+                              setState(() {});
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),

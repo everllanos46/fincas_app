@@ -1,9 +1,12 @@
 import 'dart:ui'; // Agrega esta importación
-
 import 'package:flutter/material.dart';
+import 'package:flutter_application_2/sqlite/database.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'main_products_screen.dart';
 import 'register.dart';
 import 'package:flutter_application_2/repository/firebase_service.dart';
+import 'package:local_auth/local_auth.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key? key}) : super(key: key);
@@ -15,6 +18,9 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   late TextEditingController _userController;
   late TextEditingController _passController;
+  bool iniciarSesionConHuella = false;
+  bool mantenerSesion = false;
+  final LocalAuthentication _localAuth = LocalAuthentication();
 
   @override
   void initState() {
@@ -22,14 +28,22 @@ class _LoginPageState extends State<LoginPage> {
     _passController = TextEditingController();
 
     super.initState();
+    _loadAjustes();
   }
 
-  List<Map<String, dynamic>> users = [
-    {"user": "finca1", "password": "123", "role": "admin"},
-    {"user": "finca2", "password": "123", "role": "cliente"},
-    {"user": "finca3", "password": "123", "role": "admin"},
-    // Agrega más usuarios si es necesario
-  ];
+  Future<void> _loadAjustes() async {
+    Map<String, dynamic>? ajustes = await DatabaseHelper.instance.getAjustes();
+    if (ajustes != null) {
+      setState(() {
+        iniciarSesionConHuella = ajustes['iniciarSesionConHuella'] == 1;
+        mantenerSesion = ajustes['mantenerSesionIniciada'] == 1;
+        // Si se mantiene la sesión iniciada, realiza el login automáticamente
+        if (mantenerSesion) {
+          _performLoginWithSavedCredentials();
+        }
+      });
+    }
+  }
 
   Future<Map<String, dynamic>?> login(String user, String password) async {
     return await getUserByField(user, password);
@@ -48,9 +62,9 @@ class _LoginPageState extends State<LoginPage> {
       ),
       child: BackdropFilter(
         filter: ImageFilter.blur(
-            sigmaX: 5.0,
-            sigmaY:
-                5.0), // Ajusta el valor de sigma para controlar el nivel de desenfoque
+          sigmaX: 5.0,
+          sigmaY: 5.0,
+        ),
         child: Scaffold(
           backgroundColor: Colors.transparent,
           body: ListView(
@@ -135,6 +149,7 @@ class _LoginPageState extends State<LoginPage> {
                         padding:
                             EdgeInsets.symmetric(vertical: 0, horizontal: 30),
                         child: TextField(
+                          obscureText: true,
                           controller: _passController,
                           decoration: InputDecoration(
                             suffix: GestureDetector(
@@ -160,7 +175,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       InkWell(
                         onTap: () {
-                          signIn(_userController.text, _passController.text);
+                          _handleLogin();
                         },
                         child: Container(
                           child: Row(
@@ -189,7 +204,8 @@ class _LoginPageState extends State<LoginPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => RegisterScreen()),
+                              builder: (context) => RegisterScreen(),
+                            ),
                           );
                         },
                         child: Container(
@@ -229,7 +245,51 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Future<void> signIn(String user, String password) async {
+  Future<void> _handleLogin() async {
+    if (iniciarSesionConHuella) {
+      // Verifica la huella
+      var enable = await _localAuth.isDeviceSupported();
+      if (enable) {
+        bool authenticated = await _authenticateWithBiometrics();
+        if (authenticated) {
+          // Realiza el inicio de sesión con las credenciales almacenadas
+          await _performLoginWithSavedCredentials();
+        }
+      } else {
+        _performLogin(_userController.text, _passController.text);
+      }
+    } else {
+      // Realiza el inicio de sesión con usuario y contraseña
+      _performLogin(_userController.text, _passController.text);
+    }
+  }
+
+  Future<bool> _authenticateWithBiometrics() async {
+    try {
+      return await _localAuth.authenticate(
+          localizedReason: 'Autenticación necesaria para iniciar sesión',
+          options: const AuthenticationOptions(biometricOnly: true));
+    } catch (e) {
+      print('Error de autenticación: $e');
+      return false;
+    }
+  }
+
+  Future<void> _performLoginWithSavedCredentials() async {
+    Map<String, dynamic>? savedCredentials =
+        await DatabaseHelper.instance.getAjustes();
+
+    if (savedCredentials != null) {
+      var user = savedCredentials['usuario'];
+      var pass = savedCredentials['password'];
+      _userController.text = user;
+      _passController.text = pass;
+      _performLogin(user,pass);
+      setState(() {});
+    }
+  }
+
+  Future<void> _performLogin(String user, String password) async {
     if (user.isEmpty || password.isEmpty) {
       showDialog(
         context: context,
@@ -269,67 +329,22 @@ class _LoginPageState extends State<LoginPage> {
           ),
           (route) => false,
         );
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.success,
+          text: 'Sesión iniciada correctamente',
+          confirmBtnText: "Aceptar",
+          title: "Bienvenido!",
+        );
+      } else {
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.error,
+          text: 'Credenciales incorrectas.',
+          confirmBtnText: "Aceptar",
+          title: "Error!",
+        );
       }
-    } /*else {
-      // Muestra un mensaje de error si las credenciales son incorrectas
-      _showAlerts(context, false);
-    }*/
-  }
-
-  void _showAlerts(BuildContext context, bool login) {
-    if (login) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('Bienvenido'),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20.0),
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text('Usuario y contraseña correcta, bienvenido!'),
-                Image(
-                  image: NetworkImage(
-                    'https://definicion.de/wp-content/uploads/2017/01/Correcto.jpg',
-                  ),
-                  height: 100,
-                ),
-              ],
-            ),
-          );
-        },
-        barrierDismissible: true,
-      );
-    } else {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('Error!'),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20.0),
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text('Usuario o contraseña incorrecta, vuelva a intentar!'),
-                Image(
-                  image: NetworkImage(
-                    'http://altaglatam.com/wp-content/uploads/2014/03/errores.png',
-                  ),
-                  height: 50,
-                ),
-              ],
-            ),
-            actions: <Widget>[
-              TextButton(child: Text('Cancelar'), onPressed: () {})
-            ],
-          );
-        },
-        barrierDismissible: true,
-      );
     }
   }
 }

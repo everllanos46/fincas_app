@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_2/cart/cart_view.dart';
 import 'package:flutter_application_2/product/view.dart';
 import 'package:flutter_application_2/repository/firebase_service.dart';
+import 'package:flutter_application_2/views/profile.dart';
 import 'customwidgets/custom_drawer.dart';
 import 'product/add.dart';
 import "package:flutter_application_2/data/product.dart";
@@ -50,13 +51,13 @@ class _MainProductsScreenState extends State<MainProductsScreen> {
         actions: <Widget>[
           IconButton(
             onPressed: () {
-              Navigator.of(context).pushAndRemoveUntil(
+              Navigator.push(
+                context,
                 MaterialPageRoute(
-                  builder: (_) => MainProductsScreen(
+                  builder: (context) => EditProfileScreen(
                     user: widget.user,
                   ),
                 ),
-                (route) => false,
               );
             },
             icon: Container(
@@ -66,8 +67,7 @@ class _MainProductsScreenState extends State<MainProductsScreen> {
                 shape: BoxShape.circle,
                 image: DecorationImage(
                   fit: BoxFit.cover,
-                  image: NetworkImage(
-                      "https://bloglatam.jacto.com/wp-content/uploads/2022/07/tipos-de-ganaderia.jpeg"),
+                  image: NetworkImage(widget.user['imagen']),
                 ),
               ),
             ),
@@ -76,18 +76,16 @@ class _MainProductsScreenState extends State<MainProductsScreen> {
       ),
       body: widget.user["role"] == 'admin'
           ? MainProductsBodyWithTabs()
-          : NonAdminView(), // Mostrar una vista de ejemplo si el rol no es "admin"
-      floatingActionButton: widget.user['role'] == 'admin'
-          ? FloatingActionButton(
-              onPressed: () {
-                setState(() {
-                  _showAdditionalButtons = !_showAdditionalButtons;
-                });
-              },
-              backgroundColor: Color(0xFF674AEF),
-              child: Icon(Icons.add_business),
-            )
-          : null,
+          : NonAdminView(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            _showAdditionalButtons = !_showAdditionalButtons;
+          });
+        },
+        backgroundColor: Color(0xFF674AEF),
+        child: Icon(Icons.add_business),
+      ),
       drawer: CustomDrawer(user: widget.user),
     );
   }
@@ -123,7 +121,7 @@ class _MainProductsScreenState extends State<MainProductsScreen> {
             DefaultTabController(
               length: 2,
               child: Container(
-                margin: EdgeInsets.fromLTRB(10, 120, 40, 10),
+                margin: EdgeInsets.fromLTRB(10, 120, 10, 10),
                 child: Column(
                   children: [
                     TabBar(
@@ -142,8 +140,8 @@ class _MainProductsScreenState extends State<MainProductsScreen> {
                               builder: ((context, snapshot) {
                                 return RefreshIndicator(
                                   onRefresh: () async {
-                                    // Aquí puedes realizar una nueva petición o cargar los datos nuevamente.
-                                    await getProductsByUser(); // Reemplaza fetchData con tu lógica para obtener productos.
+                                    await getProductsByUser();
+                                    setState(() {});
                                   },
                                   child: ListView.builder(
                                     itemCount: products1
@@ -160,8 +158,8 @@ class _MainProductsScreenState extends State<MainProductsScreen> {
                               builder: ((context, snapshot) {
                                 return RefreshIndicator(
                                   onRefresh: () async {
-                                    // Aquí puedes realizar una nueva petición o cargar los datos nuevamente.
-                                    await getProducts(); // Reemplaza fetchData con tu lógica para obtener productos.
+                                    await getProducts();
+                                    setState(() {});
                                   },
                                   child: ListView.builder(
                                     itemCount: products2
@@ -182,7 +180,7 @@ class _MainProductsScreenState extends State<MainProductsScreen> {
             ),
             if (_showAdditionalButtons) ...[
               Positioned(
-                top: 650,
+                top: 630,
                 right: 12,
                 child: ElevatedButton(
                   onPressed: () {
@@ -203,7 +201,7 @@ class _MainProductsScreenState extends State<MainProductsScreen> {
                 ),
               ),
               Positioned(
-                top: 610,
+                top: 590,
                 right: 12,
                 child: ElevatedButton(
                   onPressed: () {
@@ -330,32 +328,59 @@ class _MainProductsScreenState extends State<MainProductsScreen> {
   // }
 
   Widget NonAdminView() {
-    return Column(
+    return Stack(
       children: [
-        Container(
-          height: MediaQuery.of(context).size.height / 7,
-          width: MediaQuery.of(context).size.width,
-          decoration: BoxDecoration(
-            color: Color(0xFF674AEF),
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(45),
-              bottomRight: Radius.circular(45),
+        Column(
+          children: [
+            Container(
+              height: MediaQuery.of(context).size.height / 7,
+              width: MediaQuery.of(context).size.width,
+              decoration: BoxDecoration(
+                color: Color(0xFF674AEF),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(45),
+                  bottomRight: Radius.circular(45),
+                ),
+              ),
+              child: Center(child: SearchBox()),
+            ),
+            Expanded(
+              child: FutureBuilder(
+                  future: geProducts(),
+                  builder: ((context, snapshot) {
+                    return ListView.builder(
+                      itemCount: snapshot.data?.length,
+                      itemBuilder: (context, index) {
+                        return createProductCard(snapshot.data![index], false);
+                      },
+                    );
+                  })),
+            ),
+          ],
+        ),
+        if (_showAdditionalButtons) ...[
+          Positioned(
+            top: 630,
+            right: 12,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CartViewScreen(
+                      user: widget.user,
+                    ),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                primary: Color(0xFF674AEF),
+                shape: CircleBorder(),
+              ),
+              child: Icon(Icons.shopping_cart, color: Colors.white),
             ),
           ),
-          child: Center(child: SearchBox()),
-        ),
-        Expanded(
-          child: FutureBuilder(
-              future: geProducts(),
-              builder: ((context, snapshot) {
-                return ListView.builder(
-                  itemCount: snapshot.data?.length,
-                  itemBuilder: (context, index) {
-                    return createProductCard(snapshot.data![index], false);
-                  },
-                );
-              })),
-        ),
+        ]
       ],
     );
   }

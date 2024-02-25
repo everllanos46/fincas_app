@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_2/customwidgets/custom_drawer.dart';
 import 'package:flutter_application_2/data/product.dart';
 import 'package:flutter_application_2/repository/firebase_service.dart';
+import 'package:flutter_application_2/utils/alert.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:photo_view/photo_view.dart';
 import 'dart:io';
+
+import 'package:photo_view/photo_view_gallery.dart';
 
 class ProductRegistrationScreen extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -58,9 +62,8 @@ class _ProductRegistrationScreenState extends State<ProductRegistrationScreen> {
           child: Form(
             key: _formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(height: 20),
                 Text(
                   widget.product != null
                       ? "Actualizar los detalles del producto"
@@ -71,6 +74,65 @@ class _ProductRegistrationScreenState extends State<ProductRegistrationScreen> {
                   ),
                 ),
                 SizedBox(height: 20),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 150,
+                      height: 150,
+                      alignment: Alignment.center,
+                      child: GestureDetector(
+                        onLongPress: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PhotoViewGallery.builder(
+                                itemCount: 1,
+                                builder: (context, index) {
+                                  return PhotoViewGalleryPageOptions(
+                                    imageProvider:
+                                        NetworkImage(widget.product!['image']),
+                                    minScale: PhotoViewComputedScale.contained,
+                                    maxScale:
+                                        PhotoViewComputedScale.covered * 2,
+                                  );
+                                },
+                                scrollPhysics: BouncingScrollPhysics(),
+                                backgroundDecoration: BoxDecoration(
+                                  color: Colors.black,
+                                ),
+                                pageController: PageController(),
+                              ),
+                            ),
+                          );
+                        },
+                        onTap: () async {
+                          final XFile? image = await ImagePicker()
+                              .pickImage(source: ImageSource.gallery);
+                          if (image != null) {
+                            setState(() {
+                              selectedImage = image;
+                            });
+                          }
+                        },
+                        child: CircleAvatar(
+                          radius: 75,
+                          backgroundImage: selectedImage != null
+                              ? FileImage(File(selectedImage!.path))
+                              : widget.product != null
+                                  ? NetworkImage(widget.product!['image'])
+                                      as ImageProvider<Object>?
+                                  : NetworkImage(
+                                      'https://png.pngitem.com/pimgs/s/157-1571855_upload-button-transparent-upload-to-cloud-hd-png.png'), // Reemplaza con la URL real
+                          backgroundColor: Colors.transparent,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 10,
+                ),
                 TextFormField(
                   controller: nombreController,
                   decoration: InputDecoration(
@@ -137,102 +199,85 @@ class _ProductRegistrationScreenState extends State<ProductRegistrationScreen> {
                   },
                 ),
                 SizedBox(height: 16),
-                GestureDetector(
-                  onTap: () async {
-                    final XFile? image = await ImagePicker()
-                        .pickImage(source: ImageSource.gallery);
-                    if (image != null) {
-                      setState(() {
-                        selectedImage = image;
-                      });
-                    }
-                  },
-                  child: Column(
-                    children: [
-                      if (selectedImage != null)
-                        Image.file(File(selectedImage!.path),
-                            width: 150, height: 150),
-                      if (selectedImage == null)
-                        Icon(Icons.add_a_photo, size: 50),
-                      Text(
-                        "Seleccionar imagen",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Color(0xFF674AEF),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 16),
                 TextFormField(
-                  controller: cantidadController,
-                  decoration: InputDecoration(
-                    labelText: "Cantidad",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20.0),
+                    controller: cantidadController,
+                    decoration: InputDecoration(
+                      labelText: "Cantidad",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20.0),
+                      ),
                     ),
-                  ),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Este campo es requerido';
-                    }
-                    if (int.parse(value) <= 0) {
-                      return 'El valor debe ser mayor que 0';
-                    }
-                    return null;
-                  },
-                ),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Este campo es requerido';
+                      }
+                      try {
+                        double parsedValue = double.parse(value);
+                        if (parsedValue <= 0) {
+                          return 'El valor debe ser mayor que 0';
+                        }
+                      } catch (e) {
+                        return 'Ingresa un número válido';
+                      }
+                      return null;
+                    }),
                 SizedBox(height: 20),
                 Center(
-                    child: ElevatedButton(
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      if (widget.product != null) {
-                        await updateProduct(
-                          id: widget.product!['id'],
-                          name: nombreController.text,
-                          description: descripcionController.text,
-                          weight: pesoController.text,
-                          price: precioController.text,
-                          user: widget.user['user'],
-                          imagen: File(selectedImage!.path),
-                          cantidad: int.parse(cantidadController.text),
-                        );
-                      } else {
-                        await addProduct(
-                          name: nombreController.text,
-                          description: descripcionController.text,
-                          weight: pesoController.text,
-                          price: precioController.text,
-                          user: widget.user['user'],
-                          imagen: File(selectedImage!.path),
-                          cantidad: int.parse(cantidadController.text),
-                        );
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        if (widget.product != null) {
+                          var res = await updateProduct(
+                            id: widget.product!['id'],
+                            name: nombreController.text,
+                            description: descripcionController.text,
+                            weight: pesoController.text,
+                            price: precioController.text,
+                            type: 1,
+                            user: widget.user['user'],
+                            imagen:  File(selectedImage?.path ?? widget.product!['image']),
+                            cantidad: cantidadController.text.isNotEmpty
+                                ? cantidadController.text.contains('.')
+                                    ? int.parse(
+                                        cantidadController.text.split('.')[0])
+                                    : int.tryParse(cantidadController.text) ?? 0
+                                : 0,
+                          );
+                          await alertResponse(res, "Producto actualizado correctamente!", "Actualizado!", context, "Hubo un error al momento de actualizar el producto", "Error!");
+                        } else {
+                          var res = await addProduct(
+                            name: nombreController.text,
+                            description: descripcionController.text,
+                            weight: pesoController.text,
+                            price: precioController.text,
+                            user: widget.user['user'],
+                            imagen: File(selectedImage!.path),
+                            cantidad: int.parse(cantidadController.text),
+                          );
+                          await alertResponse(res, "Producto agregado correctamente!", "Agregado!", context, "Hubo un error al momento de agregar el producto", "Error!");
+                        }
                       }
-
-                      Navigator.pop(context); // Cierra la vista de registro
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    primary: Color(0xFF674AEF),
-                    onPrimary: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.0),
+                    },
+                    style: ElevatedButton.styleFrom(
+                      primary: Color(0xFF674AEF),
+                      onPrimary: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20.0),
+                      ),
+                      elevation: 5,
                     ),
-                    elevation: 5,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      widget.product != null ? "Actualizar" : "Agregar",
-                      style: TextStyle(
-                        fontSize: 18,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        widget.product != null ? "Actualizar" : "Agregar",
+                        style: TextStyle(
+                          fontSize: 18,
+                        ),
                       ),
                     ),
                   ),
-                )),
+                ),
               ],
             ),
           ),

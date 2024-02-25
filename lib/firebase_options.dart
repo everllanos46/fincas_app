@@ -44,37 +44,37 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyApdKnQmEGE0qF-7tZSq2RgkHCy8MPpicw',
-    appId: '1:805633383649:web:d52bf89168d07a96dc6ba0',
-    messagingSenderId: '805633383649',
-    projectId: 'fincas-app',
-    authDomain: 'fincas-app.firebaseapp.com',
-    storageBucket: 'fincas-app.appspot.com',
+    apiKey: 'AIzaSyDjtx_siRkpEXG3ee1VqN8sb_BjpvtF_LU',
+    appId: '1:706404710263:web:ef137c413672b796629372',
+    messagingSenderId: '706404710263',
+    projectId: 'app-fincas',
+    authDomain: 'app-fincas.firebaseapp.com',
+    storageBucket: 'app-fincas.appspot.com',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCoizb5oJmM1KWbujH1M-N5210rVCvnfv8',
-    appId: '1:805633383649:android:209c38daaff9d8e4dc6ba0',
-    messagingSenderId: '805633383649',
-    projectId: 'fincas-app',
-    storageBucket: 'fincas-app.appspot.com',
+    apiKey: 'AIzaSyCvvyKTigWjrflO-Lbpqad4O71xm0yyCnc',
+    appId: '1:706404710263:android:0adf24f2ec0c326a629372',
+    messagingSenderId: '706404710263',
+    projectId: 'app-fincas',
+    storageBucket: 'app-fincas.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyATXN4Th4McTrs8VR3bhH6qf21xoUgbHbU',
-    appId: '1:805633383649:ios:ff80e6fc65456e61dc6ba0',
-    messagingSenderId: '805633383649',
-    projectId: 'fincas-app',
-    storageBucket: 'fincas-app.appspot.com',
+    apiKey: 'AIzaSyCtWjpa-FwJ6QuqU6Ygftwfn-wrKwBTmT8',
+    appId: '1:706404710263:ios:61d621e23debea92629372',
+    messagingSenderId: '706404710263',
+    projectId: 'app-fincas',
+    storageBucket: 'app-fincas.appspot.com',
     iosBundleId: 'com.example.flutterApplication2',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyATXN4Th4McTrs8VR3bhH6qf21xoUgbHbU',
-    appId: '1:805633383649:ios:c47ab7b7279cee63dc6ba0',
-    messagingSenderId: '805633383649',
-    projectId: 'fincas-app',
-    storageBucket: 'fincas-app.appspot.com',
+    apiKey: 'AIzaSyCtWjpa-FwJ6QuqU6Ygftwfn-wrKwBTmT8',
+    appId: '1:706404710263:ios:8e0732a7c4eaa331629372',
+    messagingSenderId: '706404710263',
+    projectId: 'app-fincas',
+    storageBucket: 'app-fincas.appspot.com',
     iosBundleId: 'com.example.flutterApplication2.RunnerTests',
   );
 }
